@@ -1,0 +1,22 @@
+# --- Security & Environment Variables ---
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+*.pem
+
+# --- Dependencies (Don't commit these!) ---
+node_modules/
+venv/
+env/
+__pycache__/
+dist/
+build/
+
+# --- OS & Editor System Files ---
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.log
