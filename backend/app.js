@@ -12,6 +12,8 @@ const dotenv = require('dotenv');
 dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET;
 const app = express();
+const sendEmail = require('./utils/sendEmail');
+
 app.use(express.json());
 // app.use("/uploads",express.static('uploads'));
 app.use(
@@ -181,6 +183,7 @@ const authStudent = (req, res, next) => {
 
 
 
+
  const studentSchema = new mongoose.Schema({
     name:String,
     email:String,
@@ -192,35 +195,64 @@ const authStudent = (req, res, next) => {
  })
  const Student = mongoose.model('student',studentSchema);
  
-app.post('/api/admin/student-signup', auth, isAdmin,async(req,res)=>{
+// ADMIN CREATING STUDENT
+app.post('/api/admin/student-signup', auth, isAdmin, async (req, res) => {
     const { email } = req.body;
 
-  if (!gmailRegex.test(email)) {
-    return res.status(400).json({
-      message: "Only Gmail addresses (@gmail.com) are allowed",
-    });
-  }
-    try{
-        const {name,email,password}=req.body;
-        const existingStudent = await Student.findOne({email});
-        if(existingStudent) return res.status(400).json({message:'student already exists'});
+    if (!gmailRegex.test(email)) {
+        return res.status(400).json({
+            message: "Only Gmail addresses (@gmail.com) are allowed",
+        });
+    }
 
-        const salt=await bcrypt.genSalt(10);
-        const hashedpas=await bcrypt.hash(password,salt);
-        const newstudent= new Student({
+    try {
+        const { name, email, password } = req.body;
+        const existingStudent = await Student.findOne({ email });
+        if (existingStudent) return res.status(400).json({ message: 'Student already exists' });
+
+        const salt = await bcrypt.genSalt(10);
+        const hashedpas = await bcrypt.hash(password, salt);
+
+        // 1. Create Student
+        const newstudent = new Student({
             name,
             email,
-            password:hashedpas,
-            createdBy:req.user.id,
+            password: hashedpas,
+            createdBy: req.user.id,
         });
         await newstudent.save();
-        res.status(201).json({message:'student registered successfully'});
-    }catch (err) {
-    console.error(err);
-    res.status(500).json({ message: err.message });
-}
 
+        // 2. Send Email
+        const message = `
+            <h3>Welcome to SyncEdu</h3>
+            <p>Hello ${name},</p>
+      
+            <p>Your login credentials:</p>
+            <ul>
+                <li>Email: ${email}</li>
+                <li>Password: ${password}</li>
+            </ul>
 
+            <p>Please login and change your password.</p>
+            <p>Good luck with your tasks!</p>
+        `;
+
+        try {
+            await sendEmail({
+                email: email,
+                subject: "SyncEdu Student Registration",
+                message: message,
+            });
+            res.status(201).json({ message: 'Student registered and email sent successfully' });
+        } catch (emailError) {
+            console.log("Email error:", emailError);
+            res.status(201).json({ message: 'Student registered, but email failed to send.' });
+        }
+
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: err.message });
+    }
 });
 
 app.post('/api/student/login',async(req,res)=>{
@@ -243,36 +275,6 @@ app.post('/api/student/login',async(req,res)=>{
 });
 
 
-// app.post('/api/admin/signup',async (req,res)=>{
-//     const { email } = req.body;
-
-//   if (!gmailRegex.test(email)) {
-//     return res.status(400).json({
-//       message: "Admin email must end with @gmail.com",
-//     });
-//   }
-//     try{
-//         const{name,email,password}=req.body;
-
-//         const existingUser = await admin.findOne({email});
-//         if(existingUser) return res.status(400).json({message:'admin already existx'});
-
-//         const salt = await bcrypt.genSalt(10)
-//         const hashedpas = await bcrypt.hash(password,salt);
-
-//         const newadmin = new admin({
-//             name,
-//             email,
-//             password:hashedpas,
-//         })
-
-//         await newadmin.save();
-//         res.status(201).json({message:'admin registered sucessfully'})
-// }catch(err){
-//     res.status(500).json({message:'internal server error'})
-// }
-
-// })
 
 app.post('/api/admin/login',async (req,res)=>{
     const { email } = req.body;
@@ -291,11 +293,7 @@ app.post('/api/admin/login',async (req,res)=>{
             const ismatch = await bcrypt.compare(password,adminexixts.password);
             if(!ismatch) return res.status(400).json({message:'invalid credentials'})
 
-    // const token = jwt.sign(
-    //     {id:adminexixts._id},
-    //     JWT_SECRET,
-    //     {expiresIn:'1h'}
-    // )
+    
 
     const token = jwt.sign(
   {
@@ -314,26 +312,54 @@ app.post('/api/admin/login',async (req,res)=>{
 })
 
 
-app.post("/api/superadmin/create-admin",auth,isSuperAdmin,async (req, res) => {
-    const { name, email, password } = req.body;
+// SUPERADMIN CREATING ADMIN
+app.post("/api/superadmin/create-admin", auth, isSuperAdmin, async (req, res) => {
+    try {
+        const { name, email, password } = req.body;
 
-    const exists = await admin.findOne({ email });
-    if (exists) {
-      return res.status(400).json({ message: "Admin already exists" });
+        const exists = await admin.findOne({ email });
+        if (exists) {
+            return res.status(400).json({ message: "Admin already exists" });
+        }
+
+        const hashed = await bcrypt.hash(password, 10);
+
+        // 1. Create the Admin in DB
+        await admin.create({
+            name,
+            email,
+            password: hashed,
+            role: "admin",
+        });
+
+        // 2. Send Email with the RAW password (not the hashed one)
+        const message = `
+            <h3>Welcome to SyncEdu</h3>
+            <p>Hello ${name},</p>
+            <p>Your login credentials:</p>
+            <ul>
+                <li>Email: ${email}</li>
+                <li>Password: ${password}</li>
+            </ul>
+            <p>Please login and change your password.</p>
+        `;
+
+        try {
+            await sendEmail({
+                email: email,
+                subject: "SyncEdu Admin Login Credentials",
+                message: message,
+            });
+            res.json({ message: "Admin created and email sent successfully" });
+        } catch (emailError) {
+            console.log("Email error:", emailError);
+            res.json({ message: "Admin created, but email failed to send." });
+        }
+
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
-
-    const hashed = await bcrypt.hash(password, 10);
-
-    await admin.create({
-      name,
-      email,
-      password: hashed,
-      role: "admin",
-    });
-
-    res.json({ message: "Admin created successfully" });
-  }
-);
+});
 
 
 app.get('/api/admin/dashboard', auth, isAdmin, (req, res) => {
@@ -427,30 +453,46 @@ app.post('/api/admin/create-task',auth, isAdmin,upload.single('questionPdf'),asy
   }
 );
 
-const answerUploadPath = path.join(__dirname, 'uploads', 'answers');
+// Robust path resolution to fix ENOENT
+// --- FIX START: Robust Folder Creation ---
 
+// 1. Define absolute path using path.resolve (safer than path.join)
+const answerUploadPath = path.resolve(__dirname, 'uploads', 'answers');
+
+// 2. Force create the directory if it doesn't exist
 if (!fs.existsSync(answerUploadPath)) {
-  fs.mkdirSync(answerUploadPath, { recursive: true });
+  try {
+    fs.mkdirSync(answerUploadPath, { recursive: true });
+    console.log("✅ Created missing folder:", answerUploadPath);
+  } catch (error) {
+    console.error("❌ Error creating folder:", error);
+  }
 }
 
+// 3. Configure Multer
 const answerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
+    // Pass the ensured path
     cb(null, answerUploadPath);
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname);
+    // Sanitize filename: remove spaces to prevent URL issues
+    const cleanName = file.originalname.replace(/\s+/g, '-');
+    cb(null, Date.now() + '-' + cleanName);
   },
 });
 
 const uploadAnswer = multer({
   storage: answerStorage,
   fileFilter: (req, file, cb) => {
-    if (file.mimetype !== 'application/pdf') {
-      return cb(new Error('Only PDF files allowed'), false);
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF files are allowed'), false);
     }
-    cb(null, true);
   },
 });
+// --- FIX END ---
 
 
 // students see their tasks
@@ -536,6 +578,67 @@ app.put('/api/student/task/:id',authStudent,async(req,res)=>{
         res.status(500).json({message:'internal server errorsss'});
     }
 });
+
+
+
+
+// Example: Function for Superadmin to add Admin
+exports.addAdmin = async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    // 1. Check if user exists... (standard validation)
+
+    // 2. Create the new user instance
+    const newAdmin = await User.create({
+      name,
+      email,
+      password, // Assuming your User model hashes this 'pre-save'
+      role: 'admin'
+    });
+
+    // 3. Prepare the email content
+    const message = `
+      <h1>Welcome to SyncEdu</h1>
+      <p>Hello ${name},</p>
+      <p>You have been added as an <strong>Admin</strong>.</p>
+      <p>Your login credentials are:</p>
+      <ul>
+        <li><strong>Email:</strong> ${email}</li>
+        <li><strong>Password:</strong> ${password}</li>
+      </ul>
+      <p>Please login and change your password immediately.</p>
+    `;
+
+    // 4. Send the email using the utility we created
+    try {
+      await sendEmail({
+        email: newAdmin.email,
+        subject: 'SyncEdu Admin Login Credentials',
+        message: message,
+      });
+      
+      res.status(201).json({
+        success: true,
+        data: newAdmin,
+        message: 'Admin created and email sent successfully.'
+      });
+    } catch (emailError) {
+      // If email fails, you might want to delete the user or just warn the superadmin
+      console.error(emailError);
+      return res.status(500).json({ 
+        success: false, 
+        message: 'User created, but email could not be sent.' 
+      });
+    }
+
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+
+
 
 // admin can see all students tasks
 app.get('/api/admin/tasks',auth, isAdmin,async(req,res)=>{

@@ -104,7 +104,7 @@ export default function AdminTasks() {
   }
 
   const handledeletetask=async(taskId:string)=>{
-    const confirmDelete = window.confirm("Are u sure u want to delete this Task ?")
+    const confirmDelete = window.confirm("Are you sure youwant to delete this Task ?")
     if(!confirmDelete) return;
 
     try{
@@ -229,7 +229,28 @@ export default function AdminTasks() {
   </div>
 )}
 
-
+{task.answerPdf ? (
+  <div className="mt-2 flex items-center justify-between p-3 bg-green-50 border border-green-100 rounded-lg">
+    <div className="flex items-center gap-2 text-sm text-gray-700">
+      <div className="bg-green-200 p-1 rounded">
+        <ClipboardList className="w-4 h-4 text-green-700" />
+      </div>
+      <span className="font-medium text-green-900">Student Answer</span>
+    </div>
+    <a
+      href={`http://localhost:5000${task.answerPdf}`}
+      target="_blank"
+      rel="noreferrer"
+      className="flex items-center gap-1 text-sm text-green-700 hover:underline font-medium"
+    >
+      <Eye className="w-4 h-4" /> View Answer
+    </a>
+  </div>
+) : (
+  <div className="mt-2 text-xs text-gray-400 italic pl-1">
+    No answer uploaded yet.
+  </div>
+)}
 
             </div>
           ))}

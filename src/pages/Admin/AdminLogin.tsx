@@ -15,26 +15,32 @@ export default function AdminLogin() {
   const { login } = useAuth();
 const navigate = useNavigate();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-  e.preventDefault();
-  setError('');
-  setLoading(true);
 
-  try {
-    const response = await api.post('/admin/login', formData);
-    const decoded: any = jwtDecode(response.data.token);
-    localStorage.setItem("adminToken", response.data.token);
-    localStorage.setItem("role", decoded.role); // save role
-    if(decoded.role === "superadmin"){
-       navigate("/superadmin/dashboard");
-    } else {
-       navigate("/admin/dashboard");
+const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+        const response = await api.post('/admin/login', formData);
+        const decoded: any = jwtDecode(response.data.token);
+        
+        await login(response.data.token, decoded.role); 
+        localStorage.setItem("adminToken", response.data.token);
+        localStorage.setItem("role", decoded.role);
+
+        if(decoded.role === "superadmin"){
+            navigate("/superadmin/dashboard", { replace: true });
+        } else {
+            navigate("/admin/dashboard", { replace: true });
+        }
+ 
+
+    } catch (err: any) {
+        setError(err.response?.data?.message || 'Login failed');
+    } finally {
+        setLoading(false);
     }
-  } catch (err: any) {
-    setError(err.response?.data?.message || 'Login failed');
-  } finally {
-    setLoading(false);
-  }
 };
 
   return (

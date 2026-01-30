@@ -74,7 +74,7 @@ export default function AdminDashboard() {
   // };
 
    const handledeletestudent=async(studentId:string)=>{
-    const confirmDelete = window.confirm("Are u sure u want to delete this Task ?")
+    const confirmDelete = window.confirm("Are you sure you want to delete this Student ?")
     if(!confirmDelete) return;
 
     try{
