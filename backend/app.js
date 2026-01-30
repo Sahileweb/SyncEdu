@@ -95,31 +95,6 @@ const taskSchema = new mongoose.Schema({
 
  const Task = mongoose.model('task',taskSchema);
 
-
-// const authAdmin = (req, res, next) => {
-//   const authHeader = req.headers.authorization;
-
-//   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-//     return res.status(401).json({ message: "No token, authorization denied" });
-//   }
-
-//   const token = authHeader.split(" ")[1];
-
-//   try {
-//     const decoded = jwt.verify(token, JWT_SECRET);
-
-//     // ✅ Your token has `id`
-//     req.adminId = decoded.id;
-
-//     next();
-//   } catch (err) {
-//     return res.status(401).json({ message: "Token is not valid" });
-//   }
-// };
-
-// module.exports = authAdmin;
-
-
 const auth = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
