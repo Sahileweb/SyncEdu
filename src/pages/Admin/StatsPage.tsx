@@ -44,23 +44,20 @@ interface StatsData {
             const response = await api.get('/admin/stats');
             const result = response.data; 
 
-            // --- FIX 1 & 2: Normalize Data with Fixed Order ---
-            // We map over our FIXED list (STATUS_ORDER) instead of the random API result.
+           
             const formattedPieData = STATUS_ORDER.map(statusName => {
-                // Find the matching item from backend (case-insensitive check if needed)
+                
                 const found = (result.pieChartData || []).find(
                     (item: { name: string; value: number }) => item.name.toLowerCase() === statusName.toLowerCase()
                 );
                 
                 return {
                     name: statusName,
-                    value: found ? found.value : 0 // If not found in DB, force it to be 0
+                    value: found ? found.value : 0 
                 };
             });
             
-            // Optional: Filter out 0s if you DON'T want them in the chart. 
-            // Keep them if you want "Not Submitted: 0" to show in the legend.
-            // const finalPieData = formattedPieData.filter(item => item.value > 0);
+            
 
             const formattedLineData = (result.lineChartData || []).map((item: LineChartApiItem) => ({
                 date: item._id, 
@@ -68,7 +65,7 @@ interface StatsData {
             }));
 
             setData({ 
-                pieChartData: formattedPieData, // Use the stable, sorted data
+                pieChartData: formattedPieData, 
                 lineChartData: formattedLineData 
             });
 
@@ -85,14 +82,13 @@ interface StatsData {
       
 
         const intervalId = setInterval(() => {
-            // Pass true so we don't trigger the full loading spinner again
+
             fetchStats(true); 
         }, 5000); 
 
-        // 3. Cleanup: Stop the timer when the user leaves the page
         return () => clearInterval(intervalId);
     }, []);
-// Normalize pie chart data before render
+
 const normalizedPieData = data.pieChartData.map(item => {
   if (item.name === "Overdue") {
     return { ...item, name: "Not Submitted" };

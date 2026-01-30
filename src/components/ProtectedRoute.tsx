@@ -1,25 +1,3 @@
-// import { Navigate } from 'react-router-dom';
-// import { useAuth } from '../context/AuthContext';
-
-// interface ProtectedRouteProps {
-//   children: React.ReactNode;
-//   allowedRole: 'admin' | 'student';
-// }
-
-// export default function ProtectedRoute({ children, allowedRole }: ProtectedRouteProps) {
-//   const { isAuthenticated, role } = useAuth();
-
-//   if (!isAuthenticated) {
-//     return <Navigate to="/" replace />;
-//   }
-
-//   if (role !== allowedRole) {
-//     return <Navigate to="/" replace />;
-//   }
-
-//   return <>{children}</>;
-// }
-
 
 
 import { Navigate } from 'react-router-dom';
@@ -45,7 +23,7 @@ export default function ProtectedRoute({ children, allowedRole }: ProtectedRoute
     return <Navigate to="/" replace />;
   }
 
-  // ✅ check if user's role is in allowedRoles array
+  // check if user's role is in allowedRoles array
   if (!allowedRole.includes(role as 'admin' | 'superadmin' | 'student')) {
     return <Navigate to="/" replace />;
   }

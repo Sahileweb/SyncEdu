@@ -21,21 +21,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  // const login = (newToken: string, newRole: 'admin' | 'student') => {
-  //   localStorage.setItem('token', newToken);
-  //   localStorage.setItem('role', newRole);
-  //   setToken(newToken);
-  //   setRole(newRole);
-
-  //   if (newRole === 'admin') {
-  //     navigate('/admin/dashboard');
-  //   } else {
-  //     navigate('/student/dashboard');
-  //   }
-  // };
+  
 const login = (newToken: string, newRole: 'admin' | 'student') => {
   if (newRole === 'admin') {
-    localStorage.setItem('adminToken', newToken); // <-- match interceptor
+    localStorage.setItem('adminToken', newToken); 
   } else {
     localStorage.setItem('studentToken', newToken);
   }
@@ -58,14 +47,7 @@ const login = (newToken: string, newRole: 'admin' | 'student') => {
     navigate('/');
   };
 
-  // useEffect(() => {
-  //   const storedToken = localStorage.getItem('token');
-  //   const storedRole = localStorage.getItem('role');
-  //   if (storedToken && storedRole) {
-  //     setToken(storedToken);
-  //     setRole(storedRole as 'admin' | 'student');
-  //   }
-  // }, []);
+ 
   
 useEffect(() => {
     const role = localStorage.getItem('role');

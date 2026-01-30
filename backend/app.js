@@ -371,24 +371,7 @@ app.get('/api/admin/dashboard', auth, isAdmin, (req, res) => {
 });
 
 
-// const storage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     cb(null, 'uploads/questions'); // folder must exist
-//   },
-//   filename: (req, file, cb) => {
-//     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-//     cb(null, uniqueSuffix + path.extname(file.originalname));
-//   }, 
-// });
 
-// // 2️⃣ Multer file filter
-// const fileFilter = (req, file, cb) => {
-//   if (file.mimetype === 'application/pdf') cb(null, true);
-//   else cb(new Error('Only PDF files are allowed'), false);
-// };
-
-// // 3️⃣ Initialize upload
-// const upload = multer({ storage, fileFilter });
 
 const questionUploadPath = path.join(__dirname, 'uploads', 'questions');
 
@@ -453,13 +436,10 @@ app.post('/api/admin/create-task',auth, isAdmin,upload.single('questionPdf'),asy
   }
 );
 
-// Robust path resolution to fix ENOENT
-// --- FIX START: Robust Folder Creation ---
-
-// 1. Define absolute path using path.resolve (safer than path.join)
+// Define absolute path using path.resolve (safer than path.join)
 const answerUploadPath = path.resolve(__dirname, 'uploads', 'answers');
 
-// 2. Force create the directory if it doesn't exist
+// Force create the directory if it doesn't exist
 if (!fs.existsSync(answerUploadPath)) {
   try {
     fs.mkdirSync(answerUploadPath, { recursive: true });
@@ -469,7 +449,7 @@ if (!fs.existsSync(answerUploadPath)) {
   }
 }
 
-// 3. Configure Multer
+// Configure Multer
 const answerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     // Pass the ensured path
@@ -492,7 +472,7 @@ const uploadAnswer = multer({
     }
   },
 });
-// --- FIX END ---
+
 
 
 // students see their tasks
@@ -582,22 +562,19 @@ app.put('/api/student/task/:id',authStudent,async(req,res)=>{
 
 
 
-// Example: Function for Superadmin to add Admin
+//  Function for Superadmin to add Admin
 exports.addAdmin = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-
-    // 1. Check if user exists... (standard validation)
-
-    // 2. Create the new user instance
+    //  Create the new user instance
     const newAdmin = await User.create({
       name,
       email,
-      password, // Assuming your User model hashes this 'pre-save'
+      password, 
       role: 'admin'
     });
 
-    // 3. Prepare the email content
+    //  Prepare the email content
     const message = `
       <h1>Welcome to SyncEdu</h1>
       <p>Hello ${name},</p>
@@ -610,7 +587,7 @@ exports.addAdmin = async (req, res) => {
       <p>Please login and change your password immediately.</p>
     `;
 
-    // 4. Send the email using the utility we created
+    // Send the email using the utility we created
     try {
       await sendEmail({
         email: newAdmin.email,
@@ -828,59 +805,7 @@ app.get('/api/admin/get-tasks', auth, isAdmin, async (req, res) => {
 });
 
 
-// multer 
-// const storage = multer.diskStorage({
-//   destination:(req,file,cd)=>{
-//     if(file.fieldname==="questionsPdf"){
-//       cd(null,"uploads/questions")
-//     }else if (file.fieldname === "answerPdf") {
-//       cb(null, "uploads/answers");
-//     }
-//   },
-//   filename:(req,file,cd)=>{
-//     const uniqueName=Date.now()+ "-" + file.originalname;
-//     cb(null, uniqueName);
-//   }
-// })
 
-// const upload=multer({
-//   storage,fileFilter:(req,file,cd)=>{
-//     if(file.mimetype!=="application/pdf"){
-//       cd(new Error("only pdf allowed"),flase)
-//     }
-//     cd(null,true)
-//   }
-// })
-
-
-
-// 1️⃣ Multer storage setup
-
-
-// app.post("/init-superadmin", async (req, res) => {
-//   try {
-//     // 1️⃣ Check if superadmin already exists
-//     const exists = await admin.findOne({ role: "superadmin" });
-//     if (exists) {
-//       return res.status(400).json({ message: "Super Admin already exists" });
-//     }
-
-//     // 2️⃣ Hash password
-//     const hashedPassword = await bcrypt.hash("sahil123", 10);
-
-//     // 3️⃣ Create superadmin
-//     await admin.create({
-//       name: "Super Admin",
-//       email: "superadmin@gmail.com",
-//       password: hashedPassword,
-//       role: "superadmin",
-//     });
-
-//     res.json({ message: "Super Admin created successfully" });
-//   } catch (err) {
-//     res.status(500).json({ error: err.message });
-//   }
-// });
 
 const PORT = process.env.PORT || 5000;
 
@@ -889,16 +814,4 @@ app.listen(PORT, () => {
 });
 
 
-
-// auth admin middleware (only 1 admin for now)
-// admin - dashboard (where he can add students)
-// admin -signup /login  and students -signup
-// student - login
-// task schema - title,desc,deadline,stdId,adminId,status
-// admin route to create task for student
-// student route to see their tasks
-// student route to update task status
-// admin route to see all students tasks
-// admin stats route to see total students ,tasks,completed tasks ,overdue tasks
- 
 

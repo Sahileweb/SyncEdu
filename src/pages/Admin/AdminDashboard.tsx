@@ -23,13 +23,7 @@ export default function AdminDashboard() {
     password: '',
   });
 
-  // const [taskForm, setTaskForm] = useState({
-  //   title: '',
-  //   description: '',
-  //   deadline: '',
-  //   studentId: '',
-  // });
-
+  
   const [message, setMessage] = useState({ type: '', text: '' });
 
   useEffect(() => {
@@ -61,18 +55,7 @@ export default function AdminDashboard() {
     }
   };
 
-  // const handleAssignTask = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   try {
-  //     await api.post('/admin/create-task', taskForm);
-  //     setMessage({ type: 'success', text: 'Task assigned successfully!' });
-  //     setTaskForm({ title: '', description: '', deadline: '', studentId: '' });
-  //     setTimeout(() => setMessage({ type: '', text: '' }), 3000);
-  //   } catch (err: any) {
-  //     setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to assign task' });
-  //   }
-  // };
-
+  
    const handledeletestudent=async(studentId:string)=>{
     const confirmDelete = window.confirm("Are you sure you want to delete this Student ?")
     if(!confirmDelete) return;

@@ -3,7 +3,6 @@ import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 
 import Landing from './pages/Landing';
-// import AdminSignup from './pages/Admin/AdminSignup';
 import AdminLogin from './pages/Admin/AdminLogin';
 import AdminDashboard from './pages/Admin/AdminDashboard';
 import StudentLogin from './pages/Student/StudentLogin';
@@ -19,7 +18,6 @@ function App() {
 <Routes>
   <Route path="/" element={<Landing />} />
 
-  {/* <Route path="/admin/signup" element={<AdminSignup />} /> */}
   <Route path="/admin/login" element={<AdminLogin />} />
   <Route 
     path="/admin/dashboard" 

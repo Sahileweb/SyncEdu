@@ -22,7 +22,7 @@ interface Task {
   title: string;
   description: string;
   deadline: string;
-  studentId: { name: string }; // Adjust based on your Backend Populate logic
+  studentId: { name: string }; 
   status: string;
   questionPdf?: string  | null;
    answerPdf?: string | null; 
@@ -54,14 +54,13 @@ export default function AdminTasks() {
   const fetchData = async () => {
   try {
     setLoading(true);
-    // 1. Fetch data from backend
+    
     const [studentsRes, tasksRes] = await Promise.all([
       api.get('/admin/get-students'),
       api.get('/admin/get-tasks')
     ]);
 
 
-    // 3. Safety check: Ensure we are setting an array
     const studentData = Array.isArray(studentsRes.data) 
       ? studentsRes.data 
       : studentsRes.data.students || [];
@@ -79,7 +78,7 @@ export default function AdminTasks() {
   const handleAssignTask = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      // await api.post('/admin/create-task', taskForm);
+      
       await api.post("/admin/create-task", taskForm, {
   headers: { "Content-Type": "multipart/form-data" }
 });
@@ -288,55 +287,47 @@ export default function AdminTasks() {
                     placeholder="Details..."
                   />
                 </div>
-
-
-<div className="flex flex-col  w-full max-w-md mx-auto">
-  <label className="mb-2 text-sm font-medium text-gray-700">Upload Files</label>
-  
-  <label
-    htmlFor="questionPdf"
-    className="flex flex-col items-center justify-center w-full h-20 px-2 transition bg-white border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 focus:outline-none"
-  >
-    <svg
-  className="w-8 h-8 mb-2 text-gray-400"
-  fill="none"
-  stroke="currentColor"
-  strokeWidth="1.8"
-  viewBox="0 0 24 24"
->
-  <path
-    strokeLinecap="round"
-    strokeLinejoin="round"
-    d="M7 16l5-5 5 5M12 11v9M20 16.58A5.5 5.5 0 0018 6h-1.26A8 8 0 104 16.25"
-  />
-</svg>
-
-    <span className="text-sm  text-gray-500">
-      Click to upload
-    </span>
-
-    {taskForm.questionPdf && (
-      <span className="mt-2 text-xs text-green-600">
-        Selected file: {taskForm.questionPdf.name}
-      </span>
-    )}
-    <input
-      id="questionPdf"
-      type="file"
-      accept="application/pdf"
-      className="hidden"
-      onChange={(e) =>
-        setTaskForm({
+                <div className="flex flex-col  w-full max-w-md mx-auto">
+                  <label className="mb-2 text-sm font-medium text-gray-700">Upload Files</label>
+                  <label
+                  htmlFor="questionPdf"
+                  className="flex flex-col items-center justify-center w-full h-20 px-2 transition bg-white border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-500 hover:bg-blue-50 focus:outline-none"
+                  >
+                    <svg
+                    className="w-8 h-8 mb-2 text-gray-400"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.8"
+                    viewBox="0 0 24 24"
+                    >
+                      <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M7 16l5-5 5 5M12 11v9M20 16.58A5.5 5.5 0 0018 6h-1.26A8 8 0 104 16.25"
+                      />
+                      </svg>
+                      <span className="text-sm  text-gray-500">
+                        Click to upload
+                        </span>
+             {taskForm.questionPdf && (
+              <span className="mt-2 text-xs text-green-600">
+              Selected file: {taskForm.questionPdf.name}
+           </span>
+              )}
+          <input
+           id="questionPdf"
+           type="file"
+           accept="application/pdf"
+           className="hidden"
+           onChange={(e) =>
+           setTaskForm({
           ...taskForm,
           questionPdf: e.target.files && e.target.files[0],
         })
-      }
-    />
-  </label>
-</div>
-
-
-
+        }
+      />
+      </label>
+      </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">Deadline</label>
                   <input
