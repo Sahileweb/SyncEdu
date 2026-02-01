@@ -37,11 +37,6 @@ const Settings = () => {
       return;
     }
 
-    // if (newPassword.length < 6) {
-    //   setErrorMessage("New password must be at least 6 characters");
-    //   return;
-    // }
-
     setLoading(true);
 
     try {

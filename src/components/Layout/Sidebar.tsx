@@ -20,7 +20,6 @@ export default function Sidebar() {
 
   const studentNavItems: NavItem[] = [
     { name: 'Home', path: '/student/dashboard', icon: <Home className="w-5 h-5" /> },
-    // { name: 'Account', path: '/student/account', icon: <User className="w-5 h-5" /> },
   ];
 
   const navItems = role === 'admin' ? adminNavItems : studentNavItems;

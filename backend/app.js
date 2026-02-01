@@ -1,7 +1,6 @@
 const express =require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-// const dotenv = require('dotenv');
 const bcrypt  = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
@@ -37,9 +36,6 @@ mongoose.connect(process.env.MONGO_URL)
 .then(()=>console.log('DB connected'))
 .catch((err)=>console.log(err));
 
-
-// console.log("JWT_SECRET:", process.env.JWT_SECRET);
-// console.log("MONGO_URI:", process.env.MONGO_URL);
 
 const userSchema = new mongoose.Schema({
     name:String,
@@ -115,7 +111,6 @@ const auth = (req, res, next) => {
   }
 };
 
-// module.exports = auth;
 
 const isAdmin = (req, res, next) => {
   if (!req.user || (req.user.role !== "admin" && req.user.role !== "superadmin")) {
@@ -124,7 +119,6 @@ const isAdmin = (req, res, next) => {
   next();
 };
 
-// module.exports = isAdmin;
 
 const isSuperAdmin = (req, res, next) => {
   if (!req.user || req.user.role !== "superadmin") {
@@ -133,7 +127,7 @@ const isSuperAdmin = (req, res, next) => {
   next();
 };
 
-// module.exports = isSuperAdmin;
+
 
 
 
@@ -145,7 +139,7 @@ const authStudent = (req, res, next) => {
       return res.status(401).json({ message: "No token provided" });
     }
 
-    const token = authHeader.split(" ")[1]; // Bearer <token>
+    const token = authHeader.split(" ")[1]; 
 
     const decoded = jwt.verify(token, JWT_SECRET);
     req.studentId = decoded.id;
@@ -155,10 +149,6 @@ const authStudent = (req, res, next) => {
     return res.status(401).json({ message: "Invalid token" });
   }
 };
-
-// module.exports = authStudent;
-
-
 
 
  const studentSchema = new mongoose.Schema({
@@ -172,7 +162,7 @@ const authStudent = (req, res, next) => {
  })
  const Student = mongoose.model('student',studentSchema);
  
-// ADMIN CREATING STUDENT
+
 app.post('/api/admin/student-signup', auth, isAdmin, async (req, res) => {
     const { email } = req.body;
 
@@ -190,7 +180,7 @@ app.post('/api/admin/student-signup', auth, isAdmin, async (req, res) => {
         const salt = await bcrypt.genSalt(10);
         const hashedpas = await bcrypt.hash(password, salt);
 
-        // 1. Create Student
+       
         const newstudent = new Student({
             name,
             email,
@@ -199,7 +189,6 @@ app.post('/api/admin/student-signup', auth, isAdmin, async (req, res) => {
         });
         await newstudent.save();
 
-        // 2. Send Email
         const message = `
             <h3>Welcome to SyncEdu</h3>
             <p>Hello ${name},</p>
@@ -289,7 +278,6 @@ app.post('/api/admin/login',async (req,res)=>{
 })
 
 
-// SUPERADMIN CREATING ADMIN
 app.post("/api/superadmin/create-admin", auth, isSuperAdmin, async (req, res) => {
     try {
         const { name, email, password } = req.body;
@@ -301,7 +289,7 @@ app.post("/api/superadmin/create-admin", auth, isSuperAdmin, async (req, res) =>
 
         const hashed = await bcrypt.hash(password, 10);
 
-        // 1. Create the Admin in DB
+        
         await admin.create({
             name,
             email,
@@ -309,7 +297,6 @@ app.post("/api/superadmin/create-admin", auth, isSuperAdmin, async (req, res) =>
             role: "admin",
         });
 
-        // 2. Send Email with the RAW password (not the hashed one)
         const message = `
             <h3>Welcome to SyncEdu</h3>
             <p>Hello ${name},</p>
@@ -347,37 +334,6 @@ app.get('/api/admin/dashboard', auth, isAdmin, (req, res) => {
     });
 });
 
-
-
-
-// const questionUploadPath = path.join(__dirname, 'uploads', 'questions');
-
-// if (!fs.existsSync(questionUploadPath)) {
-//   fs.mkdirSync(questionUploadPath, { recursive: true });
-// }
-
-// const questionStorage = multer.diskStorage({
-//   destination: (req, file, cb) => {
-//     cb(null, questionUploadPath);
-//   },
-//   filename: (req, file, cb) => {
-//     cb(null, Date.now() + '-' + file.originalname);
-//   },
-// });
-
-// const upload = multer({
-//   storage: questionStorage,
-//   fileFilter: (req, file, cb) => {
-//     if (file.mimetype !== 'application/pdf') {
-//       return cb(new Error('Only PDF files allowed'), false);
-//     }
-//     cb(null, true);
-//   },
-// });
-
-
-
-
 app.post('/api/admin/create-task', auth, isAdmin, upload.single('questionPdf'), async (req, res) => {
     try {
         const { title, description, deadline, studentId } = req.body;
@@ -394,7 +350,7 @@ app.post('/api/admin/create-task', auth, isAdmin, upload.single('questionPdf'), 
             return res.status(400).json({ message: 'Deadline must be a future date' });
         }
 
-        // Get Cloudinary URL if file exists
+       
         const questionUrl = req.file ? req.file.path : null;
 
         const newtask = new Task({
@@ -409,13 +365,8 @@ app.post('/api/admin/create-task', auth, isAdmin, upload.single('questionPdf'), 
 
         await newtask.save();
 
-        // 1. Send the Success Response immediately
-        // IMPORTANT: We use 'return' here to stop executing the function for the request
         res.status(201).json({ message: 'Task created successfully' });
 
-        // 2. Run Email Logic in the background (AFTER response is sent)
-        // We do NOT use 'await' here because we don't want to hold up the response
-        // We also handle errors internally so they don't try to send a res.status(500)
         (async () => {
             try {
                 const student = await Student.findById(studentId);
@@ -439,23 +390,23 @@ app.post('/api/admin/create-task', auth, isAdmin, upload.single('questionPdf'), 
                     console.log(`Email sent to ${student.email}`);
                 }
             } catch (emailErr) {
-                // Just log the error, DO NOT send a response because we already sent one above
+                
                 console.error("Background email failed:", emailErr.message);
             }
         })();
 
     } catch (err) {
         console.error("Create Task Error:", err);
-        // Only send an error response if we haven't sent a success response yet
+        
         if (!res.headersSent) {
             return res.status(500).json({ message: 'Internal server error', error: err.message });
         }
     }
 });
-// Define absolute path using path.resolve (safer than path.join)
+
 const answerUploadPath = path.resolve(__dirname, 'uploads', 'answers');
 
-// Force create the directory if it doesn't exist
+
 if (!fs.existsSync(answerUploadPath)) {
   try {
     fs.mkdirSync(answerUploadPath, { recursive: true });
@@ -465,14 +416,12 @@ if (!fs.existsSync(answerUploadPath)) {
   }
 }
 
-// Configure Multer
 const answerStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    // Pass the ensured path
+    
     cb(null, answerUploadPath);
   },
   filename: (req, file, cb) => {
-    // Sanitize filename: remove spaces to prevent URL issues
     const cleanName = file.originalname.replace(/\s+/g, '-');
     cb(null, Date.now() + '-' + cleanName);
   },
@@ -489,9 +438,6 @@ const uploadAnswer = multer({
   },
 });
 
-
-
-// students see their tasks
 app.get('/api/student/task',authStudent,async(req,res)=>{
     try{
 
@@ -512,15 +458,13 @@ app.get('/api/student/task',authStudent,async(req,res)=>{
     }
 });
 
-// Student upload answer (Updated for Cloudinary)
 app.post('/api/student/task/:id/upload-answer', authStudent, upload.single('answerPdf'), async (req, res) => {
     try {
-        // 1. Check if Cloudinary upload was successful
+        
         if (!req.file) {
             return res.status(400).json({ message: 'No file uploaded' });
         }
 
-        // 2. Find the task belonging to this student
         const task = await Task.findOne({
             _id: req.params.id,
             studentId: req.studentId,
@@ -530,13 +474,8 @@ app.post('/api/student/task/:id/upload-answer', authStudent, upload.single('answ
             return res.status(404).json({ message: 'Task not found' });
         }
 
-        // 3. Save the Cloudinary URL (req.file.path) to the database
-        // req.file.path contains the full URL like "https://res.cloudinary.com/..."
         task.answerPdf = req.file.path; 
-        
-        // Optional: You might want to automatically mark it as Completed?
-        // task.status = 'Completed'; 
-
+     
         await task.save();
 
         res.json({ 
@@ -551,8 +490,6 @@ app.post('/api/student/task/:id/upload-answer', authStudent, upload.single('answ
 });
 
 
-
-// students update task
 app.put('/api/student/task/:id',authStudent,async(req,res)=>{
     try{
          if (req.body.status !== "Completed") {
@@ -562,7 +499,7 @@ app.put('/api/student/task/:id',authStudent,async(req,res)=>{
   const task = await Task.findOne({
     _id: req.params.id,
     studentId: req.studentId,
-    status: "Pending", // ⛔ cannot update overdue
+    status: "Pending", 
   });
 
   if (!task) {
@@ -579,13 +516,10 @@ app.put('/api/student/task/:id',authStudent,async(req,res)=>{
 });
 
 
-
-
-//  Function for Superadmin to add Admin
 exports.addAdmin = async (req, res) => {
   try {
     const { name, email, password } = req.body;
-    //  Create the new user instance
+   
     const newAdmin = await User.create({
       name,
       email,
@@ -593,7 +527,6 @@ exports.addAdmin = async (req, res) => {
       role: 'admin'
     });
 
-    //  Prepare the email content
     const message = `
       <h1>Welcome to SyncEdu</h1>
       <p>Hello ${name},</p>
@@ -606,7 +539,6 @@ exports.addAdmin = async (req, res) => {
       <p>Please login and change your password immediately.</p>
     `;
 
-    // Send the email using the utility we created
     try {
       await sendEmail({
         email: newAdmin.email,
@@ -620,7 +552,7 @@ exports.addAdmin = async (req, res) => {
         message: 'Admin created and email sent successfully.'
       });
     } catch (emailError) {
-      // If email fails, you might want to delete the user or just warn the superadmin
+      
       console.error(emailError);
       return res.status(500).json({ 
         success: false, 
@@ -633,10 +565,6 @@ exports.addAdmin = async (req, res) => {
   }
 };
 
-
-
-
-// admin can see all students tasks
 app.get('/api/admin/tasks',auth, isAdmin,async(req,res)=>{
     try{
         const tasks = await Task.find({ isDeleted: false })
@@ -731,7 +659,7 @@ app.get('/api/admin/stats', auth, isAdmin, async (req, res) => {
 });
 
 
-// admin delete tasks
+
 app.delete('/api/admin/tasks/:id',auth, isAdmin,async(req,res)=>{
     
         const task = await Task.findByIdAndUpdate(req.params.id ,
@@ -746,7 +674,6 @@ app.delete('/api/admin/students/:id',auth, isAdmin,async(req,res)=>{
        
 })
 
-// students can change their password 
 app.put('/api/students/change-password',authStudent,async(req,res)=>{
     try{
         const{oldPassword,newPassword}=req.body;
@@ -807,11 +734,10 @@ app.get('/api/admin/get-students', auth, isAdmin, async (req, res) => {
     }
 });
 
-// GET all tasks (with student names populated)
+
 app.get('/api/admin/get-tasks', auth, isAdmin, async (req, res) => {
     try {
-        // We find tasks created by this admin
-        // .populate('studentId', 'name') helps us get the student name, not just the ID
+        
         const tasks = await Task.find({ createdBy: req.user.id, isDeleted: { $ne: true } })
             .populate('studentId', 'name')
             .sort({ createdAt: -1 });

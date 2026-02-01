@@ -71,9 +71,6 @@ export default function Landing() {
                 boosting productivity
               </span>
             </h1>
-            {/* <p className="text-xl text-slate-600 mb-8 leading-relaxed">
-              Built to align educators and students, effortlessly.
-            </p> */}
           </div>
 
           {/* Cards Grid */}
@@ -181,19 +178,6 @@ export default function Landing() {
     isVisible['cta-section'] ? 'translate-y-0' : 'translate-y-8'
   } opacity-100`}
 >
-  {/* <p className="text-slate-600 text-lg">
-    New admin?{' '}
-    <a
-      href="/admin/signup"
-      className="relative font-semibold text-blue-700 hover:text-blue-800
-                 after:absolute after:left-0 after:-bottom-1
-                 after:h-0.5 after:w-0 after:bg-blue-700
-                 after:transition-all after:duration-300
-                 hover:after:w-full"
-    >
-      Create an account
-    </a>
-  </p> */}
 </div>
 
         </div>

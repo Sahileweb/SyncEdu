@@ -23,7 +23,6 @@ export default function ProtectedRoute({ children, allowedRole }: ProtectedRoute
     return <Navigate to="/" replace />;
   }
 
-  // check if user's role is in allowedRoles array
   if (!allowedRole.includes(role as 'admin' | 'superadmin' | 'student')) {
     return <Navigate to="/" replace />;
   }

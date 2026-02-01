@@ -17,7 +17,7 @@ export default function StatsPage() {
 
     const COLORS = ['#FBBF24', '#22C55E', '#EF4444'];
 interface PieData {
-  [key: string]: any; // Add index signature
+  [key: string]: any; 
   name: string;
   value: number;
 }
@@ -27,8 +27,8 @@ interface LineData {
   tasks: number;
 }
 interface LineChartApiItem {
-  _id: string;           // date or label from backend
-  tasksAssigned: number; // count
+  _id: string;          
+  tasksAssigned: number; 
 }
 
 interface StatsData {
@@ -119,9 +119,6 @@ const normalizedPieData = data.pieChartData.map(item => {
                 Task Status Distribution
               </h2>
             </div>
-                    {/* <h2 className="mb-4 text-xl font-semibold text-gray-700">Task Status Distribution</h2>
-                     */}
-                  
                     <div className="w-[99%] h-[300px]">
                         {data.pieChartData.length > 0 ? (
                             <ResponsiveContainer width="100%" height="100%" minWidth={100} debounce={200}>
@@ -162,7 +159,7 @@ const normalizedPieData = data.pieChartData.map(item => {
               </h2>
             </div>
                     
-                    {/* FIX: Explicit pixel height and width 99% prevents overflow/calc errors */}
+                    {/*  Explicit pixel height and width 99% prevents overflow/calc errors */}
                     <div className="w-[99%] pt-6 h-75">
                         {data.lineChartData.length > 0 ? (
                             <ResponsiveContainer width="100%" height="100%" minWidth={100} debounce={200}>
