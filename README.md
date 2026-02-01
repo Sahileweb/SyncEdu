@@ -67,7 +67,6 @@ This project follows a **Monolithic MVC Architecture** with a decoupled frontend
 
 ## 📂 Project Structure
 
-```text
 StudentManagement/
 ├── backend/
 │   ├── utils/            
