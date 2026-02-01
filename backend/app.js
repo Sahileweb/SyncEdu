@@ -403,6 +403,38 @@ app.post('/api/admin/create-task',auth, isAdmin,upload.single('questionPdf'),asy
       });
 
       await newtask.save();
+
+      const student = await Student.findById(studentId);
+      
+      if (student) {
+        const emailMessage = `
+          <h3>New Task Assigned: ${title}</h3>
+          <p>Hello ${student.name},</p>
+          <p>You have been assigned a new task by your admin.</p>
+          
+          <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+            <p><strong>Title:</strong> ${title}</p>
+            <p><strong>Deadline:</strong> ${new Date(deadline).toDateString()}</p>
+            <p><strong>Description:</strong> ${description}</p>
+          </div>
+
+          <p>Please login to your portal to view details and submit your work.</p>
+          <a href="http://localhost:5173/student/dashboard" style="background-color: #2563eb; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Go to Dashboard</a>
+        `;
+
+        try {
+          await sendEmail({
+            email: student.email,
+            subject: `New Task Assigned: ${title}`,
+            message: emailMessage,
+          });
+          console.log(`Email sent to ${student.email}`);
+        } catch (emailError) {
+          console.error("Failed to send task notification email:", emailError);
+          // We don't block the response here; the task is already created.
+        }
+      }
+
       res.status(201).json({ message: 'Task created' });
     } catch (err) {
       console.error(err); // helpful for debugging
