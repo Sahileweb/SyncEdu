@@ -13,6 +13,8 @@ dotenv.config();
 const JWT_SECRET = process.env.JWT_SECRET;
 const app = express();
 const sendEmail = require('./utils/sendEmail');
+const { storage } = require('./cloudinaryConfig');
+const upload = multer({ storage: storage });
 
 app.use(express.json());
 // app.use("/uploads",express.static('uploads'));
@@ -235,7 +237,7 @@ app.post('/api/student/login',async(req,res)=>{
         const{email,password}=req.body;
         
         const studentexists = await Student.findOne({email});
-        if(!studentexists) return res.status(400).json({message:'student not found.please signup'});
+        if(!studentexists) return res.status(400).json({message:'Student not found'});
 
         const ismatch = await bcrypt.compare(password,studentexists.password);
         if(!ismatch) return res.status(400).json({message:'invalid credentials'});
@@ -348,101 +350,108 @@ app.get('/api/admin/dashboard', auth, isAdmin, (req, res) => {
 
 
 
-const questionUploadPath = path.join(__dirname, 'uploads', 'questions');
+// const questionUploadPath = path.join(__dirname, 'uploads', 'questions');
 
-if (!fs.existsSync(questionUploadPath)) {
-  fs.mkdirSync(questionUploadPath, { recursive: true });
-}
+// if (!fs.existsSync(questionUploadPath)) {
+//   fs.mkdirSync(questionUploadPath, { recursive: true });
+// }
 
-const questionStorage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, questionUploadPath);
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + '-' + file.originalname);
-  },
-});
+// const questionStorage = multer.diskStorage({
+//   destination: (req, file, cb) => {
+//     cb(null, questionUploadPath);
+//   },
+//   filename: (req, file, cb) => {
+//     cb(null, Date.now() + '-' + file.originalname);
+//   },
+// });
 
-const upload = multer({
-  storage: questionStorage,
-  fileFilter: (req, file, cb) => {
-    if (file.mimetype !== 'application/pdf') {
-      return cb(new Error('Only PDF files allowed'), false);
-    }
-    cb(null, true);
-  },
-});
-
-
+// const upload = multer({
+//   storage: questionStorage,
+//   fileFilter: (req, file, cb) => {
+//     if (file.mimetype !== 'application/pdf') {
+//       return cb(new Error('Only PDF files allowed'), false);
+//     }
+//     cb(null, true);
+//   },
+// });
 
 
-app.post('/api/admin/create-task',auth, isAdmin,upload.single('questionPdf'),async (req, res) => {
+
+
+app.post('/api/admin/create-task', auth, isAdmin, upload.single('questionPdf'), async (req, res) => {
     try {
-      const { title, description, deadline, studentId } = req.body;
+        const { title, description, deadline, studentId } = req.body;
 
-      if (!title || !description || !deadline || !studentId) {
-        return res.status(400).json({ message: 'All fields are required' });
-      }
-
-      const deadlineDate = new Date(`${deadline}T00:00:00+05:30`);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-
-      if (deadlineDate <= today) {
-        return res.status(400).json({ message: 'Deadline must be a future date' });
-      }
-
-      const newtask = new Task({
-        title,
-        description,
-        deadline,
-        status: 'Pending',
-        studentId,
-        createdBy: req.user.id,
-        questionPdf: req.file ? `/uploads/questions/${req.file.filename}` : null, // now works
-      });
-
-      await newtask.save();
-
-      const student = await Student.findById(studentId);
-      
-      if (student) {
-        const emailMessage = `
-          <h3>New Task Assigned: ${title}</h3>
-          <p>Hello ${student.name},</p>
-          <p>You have been assigned a new task by your admin.</p>
-          
-          <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
-            <p><strong>Title:</strong> ${title}</p>
-            <p><strong>Deadline:</strong> ${new Date(deadline).toDateString()}</p>
-            <p><strong>Description:</strong> ${description}</p>
-          </div>
-
-          <p>Please login to your portal to view details and submit your work.</p>
-          <a href="http://localhost:5173/student/dashboard" style="background-color: #2563eb; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">Go to Dashboard</a>
-        `;
-
-        try {
-          await sendEmail({
-            email: student.email,
-            subject: `New Task Assigned: ${title}`,
-            message: emailMessage,
-          });
-          console.log(`Email sent to ${student.email}`);
-        } catch (emailError) {
-          console.error("Failed to send task notification email:", emailError);
-          // We don't block the response here; the task is already created.
+        if (!title || !description || !deadline || !studentId) {
+            return res.status(400).json({ message: 'All fields are required' });
         }
-      }
 
-      res.status(201).json({ message: 'Task created' });
+        const deadlineDate = new Date(`${deadline}T00:00:00+05:30`);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+
+        if (deadlineDate <= today) {
+            return res.status(400).json({ message: 'Deadline must be a future date' });
+        }
+
+        // Get Cloudinary URL if file exists
+        const questionUrl = req.file ? req.file.path : null;
+
+        const newtask = new Task({
+            title,
+            description,
+            deadline,
+            status: 'Pending',
+            studentId,
+            createdBy: req.user.id,
+            questionPdf: questionUrl, 
+        });
+
+        await newtask.save();
+
+        // 1. Send the Success Response immediately
+        // IMPORTANT: We use 'return' here to stop executing the function for the request
+        res.status(201).json({ message: 'Task created successfully' });
+
+        // 2. Run Email Logic in the background (AFTER response is sent)
+        // We do NOT use 'await' here because we don't want to hold up the response
+        // We also handle errors internally so they don't try to send a res.status(500)
+        (async () => {
+            try {
+                const student = await Student.findById(studentId);
+                if (student && questionUrl) {
+                    const emailMessage = `
+                        <h3>New Task Assigned: ${title}</h3>
+                        <p>Hello ${student.name},</p>
+                        <p>You have been assigned a new task by your admin.</p>
+                        <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                            <p><strong>Title:</strong> ${title}</p>
+                            <p><strong>Deadline:</strong> ${new Date(deadline).toDateString()}</p>
+                        </div>
+                        <a href="${questionUrl}">Download Question PDF</a>
+                    `;
+                    
+                    await sendEmail({
+                        email: student.email,
+                        subject: `New Task Assigned: ${title}`,
+                        message: emailMessage,
+                    });
+                    console.log(`Email sent to ${student.email}`);
+                }
+            } catch (emailErr) {
+                // Just log the error, DO NOT send a response because we already sent one above
+                console.error("Background email failed:", emailErr.message);
+            }
+        })();
+
     } catch (err) {
-      console.error(err); // helpful for debugging
-      res.status(500).json({ message: 'Internal server error creating task', error: err.message });
+        console.error("Create Task Error:", err);
+        // Only send an error response if we haven't sent a success response yet
+        if (!res.headersSent) {
+            return res.status(500).json({ message: 'Internal server error', error: err.message });
+        }
     }
-  }
-);
-
+});
 // Define absolute path using path.resolve (safer than path.join)
 const answerUploadPath = path.resolve(__dirname, 'uploads', 'answers');
 
@@ -503,40 +512,43 @@ app.get('/api/student/task',authStudent,async(req,res)=>{
     }
 });
 
-app.post('/api/student/task/:id/upload-answer',authStudent,(req, res, next) => {
-    uploadAnswer.single('answerPdf')(req, res, function (err) {
-      if (err) {
-        console.error('Multer Error:', err.message);
-        return res.status(400).json({ message: err.message });
-      }
-      next();
-    });
-  },
-  async (req, res) => {
+// Student upload answer (Updated for Cloudinary)
+app.post('/api/student/task/:id/upload-answer', authStudent, upload.single('answerPdf'), async (req, res) => {
     try {
-      if (!req.file) {
-        return res.status(400).json({ message: 'No file uploaded' });
-      }
+        // 1. Check if Cloudinary upload was successful
+        if (!req.file) {
+            return res.status(400).json({ message: 'No file uploaded' });
+        }
 
-      const task = await Task.findOne({
-        _id: req.params.id,
-        studentId: req.studentId,
-      });
+        // 2. Find the task belonging to this student
+        const task = await Task.findOne({
+            _id: req.params.id,
+            studentId: req.studentId,
+        });
 
-      if (!task) {
-        return res.status(404).json({ message: 'Task not found' });
-      }
+        if (!task) {
+            return res.status(404).json({ message: 'Task not found' });
+        }
 
-      task.answerPdf = `/uploads/answers/${req.file.filename}`;
-      await task.save();
+        // 3. Save the Cloudinary URL (req.file.path) to the database
+        // req.file.path contains the full URL like "https://res.cloudinary.com/..."
+        task.answerPdf = req.file.path; 
+        
+        // Optional: You might want to automatically mark it as Completed?
+        // task.status = 'Completed'; 
 
-      res.json({ message: 'Answer uploaded successfully' });
+        await task.save();
+
+        res.json({ 
+            message: 'Answer uploaded successfully', 
+            answerUrl: task.answerPdf 
+        });
+
     } catch (err) {
-      console.error('Upload Answer Error:', err);
-      res.status(500).json({ message: err.message });
+        console.error('Upload Answer Error:', err);
+        res.status(500).json({ message: err.message });
     }
-  }
-);
+});
 
 
 

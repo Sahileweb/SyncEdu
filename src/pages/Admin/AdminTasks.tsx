@@ -5,7 +5,8 @@ import api from '../../lib/api';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { ClipboardList } from "lucide-react";
-
+// Inside AdminTasks function
+// <--- Add this
 interface Student {
   _id: string;
   name: string;
@@ -32,6 +33,7 @@ export default function AdminTasks() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false); 
   const [taskForm, setTaskForm] = useState<{
       title: string;
       description: string;
@@ -77,6 +79,9 @@ export default function AdminTasks() {
 
   const handleAssignTask = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return; // Prevent double clicks
+
+    setIsSubmitting(true);
     try {
       
       await api.post("/admin/create-task", taskForm, {
@@ -88,6 +93,8 @@ export default function AdminTasks() {
       setTimeout(() => setMessage({ type: '', text: '' }), 3000);
     } catch (err: any) {
       setMessage({ type: 'error', text: err.response?.data?.message || 'Failed to assign task' });
+    }finally {
+      setIsSubmitting(false); // Re-enable button
     }
   };
 
@@ -203,22 +210,22 @@ export default function AdminTasks() {
             </span>
            </div>
           
-          {/* Uploaded Question File */}
+         
      
-         {task.questionPdf && (
+      {task.questionPdf && (
   <div className="mt-3 flex items-center justify-between p-3 bg-blue-50 border-gray-500 rounded-lg">
     
-    {/* Left: File info */}
+  
     <div className="flex items-center gap-2 text-sm text-gray-700">
       <Folder className="w-5 h-5 text-blue-600" />
       <span className="font-medium">Uploaded File</span>
     </div>
 
-    {/* Right: Actions */}
+    
     <a
-      href={`http://localhost:5000${task.questionPdf}`}
+      href={task.questionPdf} 
       target="_blank"
-      rel="noreferrer"
+      rel="noopener noreferrer"
       className="flex items-center gap-1 text-sm text-blue-600 hover:underline"
     >
       <Eye className="w-4 h-4" />
@@ -237,7 +244,7 @@ export default function AdminTasks() {
       <span className="font-medium text-green-900">Student Answer</span>
     </div>
     <a
-      href={`http://localhost:5000${task.answerPdf}`}
+      href={task.answerPdf} 
       target="_blank"
       rel="noreferrer"
       className="flex items-center gap-1 text-sm text-green-700 hover:underline font-medium"
@@ -359,8 +366,20 @@ export default function AdminTasks() {
                      )}
                 </select>
                 </div>
-                <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 transition-all">
-                  Assign Task
+                <button type="submit" disabled={isSubmitting} className={`w-full bg-blue-600 text-white py-3 rounded-xl font-medium hover:bg-blue-700 transition-all *:${
+                  isSubmitting ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+                }`}>
+                  {isSubmitting ? (
+                <span className="flex items-center justify-center gap-2">
+                <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+               <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Uploading & Sending...
+                </span>
+                 ) : (
+                    "Assign Task"
+                 )}
                 </button>
               </form>
             </div>
