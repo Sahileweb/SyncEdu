@@ -67,25 +67,27 @@ This project follows a **Monolithic MVC Architecture** with a decoupled frontend
 
 ## 📂 Project Structure
 
+```text
 StudentManagement/
 ├── backend/
-│   ├── utils/          
+│   ├── utils/            
 │   ├── cloudinaryConfig.js 
-│   └── app.js          
+│   └── app.js            
 │
-└── frontend/ (src/)
-    ├── components/ 
-    ├    ├──layout/  
-    ├── context/   
-    ├── lib/          
-    ├── pages/  
-    ├   ├──Admin/
-    ├   ├──Student/  
-    ├   ├──superadmin/ 
-    ├── App.css
-    ├── App.tsx
-    ├── index.css
-    └── main.tsx
+└── frontend/
+    └── src/
+        ├── components/
+        │   └── layout/   
+        ├── context/      
+        ├── lib/          
+        ├── pages/
+        │   ├── Admin/    
+        │   ├── Student/  
+        │   └── superadmin/ 
+        ├── App.css
+        ├── App.tsx       
+        ├── index.css
+        └── main.tsx      
 
 ## ⚙️ Installation & Setup
 
