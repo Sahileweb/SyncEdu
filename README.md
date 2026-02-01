@@ -1,8 +1,11 @@
 # SyncEdu - Student Management & Assignment Portal
 
-![License](https://img.shields.io/badge/license-MIT-blue.svg)
-![MERN Stack](https://img.shields.io/badge/MERN-Stack-green)
-![Status](https://img.shields.io/badge/Status-Production%20Ready-brightgreen)
+![MongoDB](https://img.shields.io/badge/MongoDB-4EA94B?style=for-the-badge&logo=mongodb&logoColor=white)
+![Express.js](https://img.shields.io/badge/Express.js-404D59?style=for-the-badge)
+![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)
+![Node.js](https://img.shields.io/badge/Node.js-43853D?style=for-the-badge&logo=node.js&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)
 
 SyncEdu is a comprehensive Learning Management System (LMS) designed to bridge the communication gap between Administrators and Students. It features a secure, role-based architecture allowing admins to assign PDF-based tasks and students to submit solutions, with real-time status tracking and email notifications.
 
