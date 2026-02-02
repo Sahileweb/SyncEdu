@@ -755,22 +755,22 @@ app.get('/api/admin/get-tasks', auth, isAdmin, async (req, res) => {
 // ================= TEMPORARY SEED ROUTE =================
 app.get('/api/seed-superadmin', async (req, res) => {
   try {
-    // 1. Check if superadmin already exists to avoid duplicates
-    const existingAdmin = await Admin.findOne({ email: "superadmin@gmail.com" });
+    // 1. Check if superadmin already exists
+    // CHANGED: Admin -> admin
+    const existingAdmin = await admin.findOne({ email: "superadmin@gmail.com" });
     if (existingAdmin) return res.send("Super Admin already exists!");
 
-    // 2. Hash the password (CRITICAL)
-    // If your Admin model has a "pre-save" hook to hash passwords, you can skip this.
-    // But doing it here explicitly is safer for this emergency script.
+    // 2. Hash password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash("admin123", salt);
 
-    // 3. Create the user
-    const superAdmin = new Admin({
+    // 3. Create user
+    // CHANGED: new Admin -> new admin
+    const superAdmin = new admin({
       name: "Super Admin",
       email: "superadmin@gmail.com",
       password: hashedPassword,
-      role: "superadmin" // Ensure this matches your Schema's role string
+      role: "superadmin"
     });
 
     await superAdmin.save();
