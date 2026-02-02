@@ -48,7 +48,7 @@ SyncEdu is a comprehensive Learning Management System (LMS) designed to bridge t
 
 ## 🛠️ Technical Architecture
 
-This project follows a **Monolithic MVC Architecture** with a decoupled frontend and backend.
+This project is a full-stack MERN application with a single-file Express.js backend and a decoupled React frontend.
 
 ### **Frontend**
 - **Framework:** React.js (Vite) + TypeScript
