@@ -752,35 +752,6 @@ app.get('/api/admin/get-tasks', auth, isAdmin, async (req, res) => {
 
 
 
-// ================= TEMPORARY SEED ROUTE =================
-app.get('/api/seed-superadmin', async (req, res) => {
-  try {
-    // 1. Check if superadmin already exists
-    // CHANGED: Admin -> admin
-    const existingAdmin = await admin.findOne({ email: "superadmin@gmail.com" });
-    if (existingAdmin) return res.send("Super Admin already exists!");
-
-    // 2. Hash password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash("admin123", salt);
-
-    // 3. Create user
-    // CHANGED: new Admin -> new admin
-    const superAdmin = new admin({
-      name: "Super Admin",
-      email: "superadmin@gmail.com",
-      password: hashedPassword,
-      role: "superadmin"
-    });
-
-    await superAdmin.save();
-    res.send("✅ Super Admin Created Successfully! Email: superadmin@gmail.com | Pass: admin123");
-  } catch (err) {
-    res.status(500).send("Error creating admin: " + err.message);
-  }
-});
-// ========================================================
-
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
