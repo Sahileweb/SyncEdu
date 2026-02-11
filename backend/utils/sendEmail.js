@@ -2,24 +2,23 @@ const nodemailer = require("nodemailer");
 
 const sendEmail = async (options) => {
   const transporter = nodemailer.createTransport({
-  host: "smtp-relay.brevo.com",
-  port: 2525, 
-  secure: false, 
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-  connectionTimeout: 10000,
-});
+    host: "smtp.gmail.com",
+    port: 587,          
+    secure: false,     
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    },
+    connectionTimeout: 10000, 
+  });
 
-  const mailOptions = {
-    from: `SyncEdu <${process.env.EMAIL_FROM}>`, 
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
     to: options.email,
     subject: options.subject,
     html: options.message,
-  };
-
-  await transporter.sendMail(mailOptions);
+  });
 };
 
 module.exports = sendEmail;
+
