@@ -1,22 +1,13 @@
-const nodemailer = require("nodemailer");
+const { Resend } = require("resend");
 
-const sendEmail = async (options) => {
-  const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
-    port: 587,          
-    secure: false,     
-    auth: {
-      user: process.env.EMAIL_USER,
-      pass: process.env.EMAIL_PASS,
-    },
-    connectionTimeout: 10000, 
-  });
+const resend = new Resend(process.env.RESEND_API_KEY);
 
-  await transporter.sendMail({
-    from: process.env.EMAIL_USER,
-    to: options.email,
-    subject: options.subject,
-    html: options.message,
+const sendEmail = async ({ email, subject, message }) => {
+  await resend.emails.send({
+    from: "SyncEdu <onboarding@resend.dev>",
+    to: email,
+    subject,
+    html: message,
   });
 };
 
