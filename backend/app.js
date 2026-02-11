@@ -750,20 +750,6 @@ app.get('/api/admin/get-tasks', auth, isAdmin, async (req, res) => {
     
 });
 
-app.get("/test-email", async (req, res) => {
-  try {
-    await sendEmail({
-      email: "yourtestemail@gmail.com",
-      subject: "Resend Test",
-      message: "<h1>This is a test email from Resend</h1>",
-    });
-    res.send("Email sent successfully!");
-  } catch (err) {
-    console.error("Test email failed:", err);
-    res.status(500).send("Error sending email");
-  }
-});
-
 
 const PORT = process.env.PORT || 5000;
 
