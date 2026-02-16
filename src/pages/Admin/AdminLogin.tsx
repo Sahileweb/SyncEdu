@@ -133,8 +133,8 @@ export default function AdminLogin() {
     setLoading(true);
     
     // Hardcoded Demo Credentials
-    const guestEmail = "demo-admin@syncedu.com";
-    const guestPassword = "admin123";
+    const guestEmail = "admin@gmail.com";
+    const guestPassword = "admin@123";
 
     // Visual feedback: fill the form
     setFormData({ email: guestEmail, password: guestPassword });

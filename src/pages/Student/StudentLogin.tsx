@@ -113,7 +113,7 @@ export default function StudentLogin() {
     setError('');
     setLoading(true);
 
-    const guestEmail = "demo-student@syncedu.com";
+    const guestEmail = "student@gmail.com";
     const guestPassword = "student123";
 
     setFormData({ email: guestEmail, password: guestPassword });
