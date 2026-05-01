@@ -152,7 +152,7 @@ export default function AdminLogin() {
                     className="mt-4 w-full flex items-center justify-center gap-2 bg-white border-2 border-blue-600 text-blue-600 py-3 rounded-xl font-medium hover:bg-blue-50 transition-colors"
                 >
                     <UserCheck className="w-5 h-5" />
-                    Login as Guest Admin
+                    Login as Guest Admin.
                 </button>
             </div>
             
