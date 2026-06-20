@@ -107,7 +107,7 @@ export default function StudentLogin() {
           </form>
 
           <p className="text-center text-purple-600 mt-6 text-m">
-            Contact your administrator to get access credentials
+            Contact your administrator to get access credential
           </p>
           <div className="mt-6">
                 <div className="relative">
