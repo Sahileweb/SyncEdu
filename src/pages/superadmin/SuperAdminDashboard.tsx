@@ -30,7 +30,7 @@ export default function SuperAdminDashboard() {
   return (
     <DashboardLayout>
       <div className="max-w-4xl mx-auto p-6">
-        <h1 className="text-3xl font-bold mb-6">Super Admin Dashboard</h1>
+        <h1 className="text-3xl font-bold mb-6">Super Admins Dashboard</h1>
 
         {message.text && (
           <div className={`p-4 mb-6 rounded-xl ${message.type === 'success' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
