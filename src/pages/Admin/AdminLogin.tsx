@@ -20,8 +20,8 @@ export default function AdminLogin() {
     setLoading(true);
     
     
-    const guestEmail = "admin@gmail.com";
-    const guestPassword = "admin@123";
+    const guestEmail = "admins@gmail.com";
+    const guestPassword = "admins";
 
    
     setFormData({ email: guestEmail, password: guestPassword });

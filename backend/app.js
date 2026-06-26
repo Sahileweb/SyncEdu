@@ -236,52 +236,74 @@ app.post('/api/student/login',async(req,res)=>{
             {id:studentexists._id,role: 'student'},JWT_SECRET,{expiresIn:"1h"}
         );
         res.json({token,message:' student login successful'});
-    }catch(err){
-        res.status(500).json({message:'internal server error'});
+    }catch(error){
+      console.log(error);
+      res.status(500).json({message:'internal server error'});
     }
 });
 
 
 
-app.post('/api/admin/login',async (req,res)=>{
-    const { email } = req.body;
+app.post('/api/admin/login', async (req, res) => {
+    try {
+        // 1. Extract once
+        const { email, password } = req.body;
 
-  if (!gmailRegex.test(email)) {
-    return res.status(400).json({
-      message: "Admin email must end with @gmail.com",
-    });
-  }
-    try{
-        const {email,password}=req.body;
+        if (!email || !password) {
+            return res.status(400).json({ message: "Email and password are required" });
+        }
+
+        // 2. Sanitize to fix the "exists but not found" paradox
+        const sanitizedEmail = email.trim().toLowerCase();
+
+        // 3. Strict @gmail.com validation
+        if (!gmailRegex.test(sanitizedEmail)) {
+            return res.status(400).json({
+                message: "Admin email must end with @gmail.com",
+            });
+        }
+
+        // 4. Query using the sanitized email
+        const adminexixts = await admin.findOne({ email: sanitizedEmail });
         
-        const adminexixts = await admin.findOne({email});
-        if(!adminexixts) return res.status(400).json({message:'admin not found.please signup '})
+        if (!adminexixts) {
+            // Logging this will help you see EXACTLY what string the backend is looking for
+            console.log("Login failed. Could not find:", sanitizedEmail);
+            return res.status(400).json({ message: 'admin not found.please signup ' });
+        }
 
-            const ismatch = await bcrypt.compare(password,adminexixts.password);
-            if(!ismatch) return res.status(400).json({message:'invalid credentials'})
+        // 5. Check password
+        const ismatch = await bcrypt.compare(password, adminexixts.password);
+        if (!ismatch) {
+            return res.status(400).json({ message: 'invalid credentials' });
+        }
 
-    
+        // 6. Generate Token
+        const token = jwt.sign(
+            {
+                id: adminexixts._id,
+                role: adminexixts.role,
+            },
+            process.env.JWT_SECRET || JWT_SECRET, // Make sure your secret is properly scoped
+            { expiresIn: "1h" }
+        );
 
-    const token = jwt.sign(
-  {
-    id: adminexixts._id,
-    role: adminexixts.role,
-  },
-  JWT_SECRET,
-  { expiresIn: "1h" }
-);
-    res.json({token,message:'admin login sucessfull'})
+        res.json({ token, message: 'admin login sucessfull' });
 
-    }catch(err){
-        res.status(500).json({message:'internal server error'});
+    } catch (err) {
+        console.error("Login Route Error:", err);
+        res.status(500).json({ message: 'internal server error' });
     }
-
-})
-
+});
 
 app.post("/api/superadmin/create-admin", auth, isSuperAdmin, async (req, res) => {
     try {
         const { name, email, password } = req.body;
+
+        if (!name || !email || !password) {
+            console.log("Received Body:", req.body); // This will show you what the frontend actually sent
+            return res.status(400).json({ message: "Missing required fields: name, email, or password" });
+        }
 
         const exists = await admin.findOne({ email });
         if (exists) {
